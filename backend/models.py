@@ -20,19 +20,19 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
     
-    # CATEGORY MODEL #
+# CATEGORY MODEL #
 class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
 
-    recipes = db.relationship('Category', back_populates='recipes')
+    recipes = db.relationship('Recipe', back_populates='category')
     users = association_proxy('recipes', 'user')
 
     def __repr__(self):
         return '<Category %r>' % self.name
     
-    # RECIPE MODEL #
+# RECIPE MODEL #
 class Recipe(db.Model):
     __tablename__ = 'recipes'
     id = db.Column(db.Integer, primary_key=True)
