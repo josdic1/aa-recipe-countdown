@@ -8,7 +8,10 @@ function RecipeProvider({ children }) {
 
 const [recipes, setRecipes] = useState([]);
 const [categories, setCategories] = useState([]);
-const [currentUser, setCurrentUser] = useState(null);
+const [currentUser, setCurrentUser] = useState({
+    id: null,
+    name: null
+});
 const [loading, setLoading] = useState(true);
 
 const loggedIn = !!currentUser;
@@ -25,10 +28,10 @@ const loggedIn = !!currentUser;
 
         
         if (res.data.logged_in) {
-            setCurrentUser(res.data.user.name);
+            setCurrentUser(res.data.user);
             setRecipes(res.data.user.recipes);
             await fetchCategories();
-            console.log('User logged in');
+
         } else {
             console.log('No user logged in');
         }
@@ -49,6 +52,26 @@ const loggedIn = !!currentUser;
             console.error('Fetch recipes failed:', err);
         }
     };
+
+  const createRecipe = async (name, category_id) => {
+    try {
+        await api.createRecipe(name, parseInt(category_id));
+        await checkUserSession();  // ← Use this instead of fetchRecipes
+        return { success: true };
+    } catch (err) {
+        return { success: false, message: err.response?.data?.message || 'Create recipe failed' };
+    }
+};
+
+    const updateRecipe = async (id, name, category_id) => {
+        try {
+            await api.updateRecipe(parseInt(id), name, parseInt(category_id));
+            await checkUserSession();  // ← Use this instead of fetchRecipes
+            return { success: true };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || 'Update recipe failed' };
+        }
+    };  
 
     // ============= CATEGORIES ===============
     const fetchCategories = async () => {
@@ -84,7 +107,7 @@ const register = async (name, password) => {
 const logout = async () => {
     try {
         await api.logout();
-        setCurrentUser(null);
+        setCurrentUser({ id: null, name: null });
         setRecipes([]);
         setCategories([]);
         return { success: true };
@@ -95,9 +118,11 @@ const logout = async () => {
 
     const contextValue = useMemo(() => ({
     recipes,
+    createRecipe,
+    updateRecipe,
     categories,
     currentUser,
-    loggedIn: !!currentUser,  
+    loggedIn: !!currentUser.id,  
     loading,
     login,
     register,

@@ -137,23 +137,45 @@ def get_recipe(recipe_id):
 
 # CREATE RECIPE #
 @app.route('/recipes', methods=['POST'])
-def create_recipe():        
+def create_recipe():
+    if 'user_id' not in session:
+        return jsonify({'message': 'Not logged in'}), 401
+    
     data = request.get_json()
-    recipe = Recipe(name=data['name'], user_id=data['user_id'], category_id=data['category_id'])
+    recipe = Recipe(
+        name=data['name'], 
+        user_id=session['user_id'],
+        category_id=int(data['category_id']) 
+    )
     db.session.add(recipe)
     db.session.commit()
-    return jsonify({'message': 'Recipe created successfully'}), 201
+    
+    recipe_schema = RecipeSchema()  # ← FIX INDENTATION
+    return jsonify(recipe_schema.dump(recipe)), 201  # ← FIX INDENTATION
 
 # UPDATE RECIPE #
 @app.route('/recipes/<int:recipe_id>', methods=['PUT'])
-def update_recipe(recipe_id):    
+def update_recipe(recipe_id):
+    if 'user_id' not in session:
+        return jsonify({'message': 'Not logged in'}), 401
+    
     recipe = db.session.get(Recipe, recipe_id)
+    
+    if not recipe:
+        return jsonify({'message': 'Recipe not found'}), 404
+    
+    # Security check: Only allow user to update their own recipes
+    if recipe.user_id != session['user_id']:
+        return jsonify({'message': 'Unauthorized'}), 403
+    
     data = request.get_json()
     recipe.name = data['name']
-    recipe.user_id = data['user_id']
-    recipe.category_id = data['category_id']
+    recipe.category_id = int(data['category_id'])
+    # Don't update user_id - recipe stays with original owner
     db.session.commit()
-    return jsonify({'message': 'Recipe updated successfully'}), 200 
+    
+    recipe_schema = RecipeSchema()
+    return jsonify(recipe_schema.dump(recipe)), 200
 
 # DELETE RECIPE #
 @app.route('/recipes/<int:recipe_id>', methods=['DELETE'])

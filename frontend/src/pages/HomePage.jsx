@@ -1,9 +1,12 @@
 import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context-providers/RecipeContext"; 
 
 function HomePage() {
     const { recipes, categories, currentUser, loading } = useContext(RecipeContext);
     const [selectedCategory, setSelectedCategory] = useState(null);
+    
+    const navigate = useNavigate();
     
     if (loading) {
         return <h1>Loading...</h1>;
@@ -13,11 +16,23 @@ function HomePage() {
     const displayedRecipes = selectedCategory 
         ? recipes.filter(r => r.category?.id === selectedCategory)
         : recipes;
+
+    const onClick = (e) => {
+        const { name, id } = e.target
+        switch(name) {
+            case 'edit':
+                navigate(`/recipes/${id}/edit`);
+                break;
+            case 'delete':
+                deleteRecipe(id);
+                break;
+        }
+    }
     
     return (
         <>
             <h1>Homepage</h1>
-            <p>Logged in as: {currentUser}</p>
+            <p>Logged in as: {currentUser.name}</p>
             
             <h2>My Categories:</h2>
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
@@ -55,6 +70,10 @@ function HomePage() {
             <h3>{r.name}</h3>
             <p>Category: {r.category?.name || 'Unknown'}</p>
             <p>By: {r.user?.name || 'Unknown'}</p>
+             <p>
+                <button type='button' id={r.id} name='edit' onClick={onClick}>Edit</button>
+                <button type='button' id={r.id} name='delete' onClick={onClick}>Delete</button>
+             </p>
         </div>
     ))}
 </div>
