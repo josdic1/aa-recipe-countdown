@@ -105,7 +105,16 @@ def create_category():
     category = Category(name=data['name'])
     db.session.add(category)
     db.session.commit()
-    return jsonify({'message': 'Category created successfully'}), 201
+    category_schema = CategorySchema()
+    return jsonify(category_schema.dump(category)), 201
+
+# DELETE CATEGORY #
+@app.route('/categories/<int:category_id>', methods=['DELETE'])
+def delete_category(category_id):   
+    category = db.session.get(Category, category_id)
+    db.session.delete(category)
+    db.session.commit()
+    return jsonify({'message': 'Category deleted successfully'}), 200
 
 
 ### ============= RECIPE ROUTES =============== ###

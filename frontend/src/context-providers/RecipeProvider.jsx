@@ -73,6 +73,16 @@ const loggedIn = !!currentUser;
         }
     };  
 
+    const deleteRecipe = async (id) => {
+        try {
+            await api.deleteRecipe(parseInt(id));
+            await checkUserSession();  // ← Use this instead of fetchRecipes
+            return { success: true };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || 'Delete recipe failed' };
+        }
+    };
+
     // ============= CATEGORIES ===============
     const fetchCategories = async () => {
         try {
@@ -82,6 +92,39 @@ const loggedIn = !!currentUser;
             console.error('Fetch categories failed:', err);
         }
     };
+
+const createCategory = async (name) => {
+    try {
+        const res = await api.createCategory(name);
+        await fetchCategories();
+        return res.data;  // ← This IS the new category
+    } catch (err) {
+        console.error('Create category failed:', err);
+        return null;
+    }
+};
+
+const updateCategory = async (id, name) => {
+    try {
+        const res = await api.updateCategory(parseInt(id), name);
+        await fetchCategories();
+        return res.data;  // The API response should have the updated category
+    } catch (err) {
+        console.error('Update category failed:', err);
+        return null;
+    }
+};  
+
+const deleteCategory = async (id) => {
+    try {
+        const res = await api.deleteCategory(parseInt(id));
+        await fetchCategories();
+        return res.data;  // The API response should have the deleted category
+    } catch (err) {
+        console.error('Delete category failed:', err);
+        return null;
+    }
+};
 
       // ============= LOGIN / REGISTER / LOGOUT ===============  
     const login = async (name, password) => {
@@ -120,7 +163,11 @@ const logout = async () => {
     recipes,
     createRecipe,
     updateRecipe,
+    deleteRecipe,
     categories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
     currentUser,
     loggedIn: !!currentUser.id,  
     loading,

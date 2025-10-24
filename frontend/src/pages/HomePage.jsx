@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context-providers/RecipeContext"; 
 
 function HomePage() {
-    const { recipes, categories, currentUser, loading } = useContext(RecipeContext);
+    const { recipes, deleteRecipe,categories, currentUser, loading } = useContext(RecipeContext);
     const [selectedCategory, setSelectedCategory] = useState(null);
     
     const navigate = useNavigate();
@@ -17,18 +17,24 @@ function HomePage() {
         ? recipes.filter(r => r.category?.id === selectedCategory)
         : recipes;
 
-    const onClick = (e) => {
+   const onClick = (e) => {
         const { name, id } = e.target
         switch(name) {
+            case 'view':
+                navigate(`/recipes/${id}`);
+                break;
             case 'edit':
                 navigate(`/recipes/${id}/edit`);
                 break;
             case 'delete':
-                deleteRecipe(id);
+                const isConfirmed = window.confirm("Are you sure you want to delete this?");
+                if (isConfirmed) {
+                    deleteRecipe(id);
+                }
                 break;
         }
     }
-    
+
     return (
         <>
             <h1>Homepage</h1>
@@ -71,6 +77,7 @@ function HomePage() {
             <p>Category: {r.category?.name || 'Unknown'}</p>
             <p>By: {r.user?.name || 'Unknown'}</p>
              <p>
+                 <button type='button' id={r.id} name='view' onClick={onClick}>View</button>
                 <button type='button' id={r.id} name='edit' onClick={onClick}>Edit</button>
                 <button type='button' id={r.id} name='delete' onClick={onClick}>Delete</button>
              </p>
