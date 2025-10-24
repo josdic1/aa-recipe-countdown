@@ -110,12 +110,23 @@ def create_category():
 
 ### ============= RECIPE ROUTES =============== ###
 
+
 # GET RECIPES #
 @app.route('/recipes', methods=['GET'])
 def get_recipes():  
     recipes = Recipe.query.all()
     recipe_schema = RecipeSchema(many=True)
     return jsonify(recipe_schema.dump(recipes)), 200    
+
+# GET MYRECIPES #
+@app.route('/my-recipes', methods=['GET'])
+def get_my_recipes():
+    if 'user_id' not in session:
+        return jsonify({'message': 'Not logged in'}), 401
+    
+    recipes = Recipe.query.filter_by(user_id=session['user_id']).all()
+    recipe_schema = RecipeSchema(many=True)
+    return jsonify(recipe_schema.dump(recipes)), 200
 
 # GET RECIPE BY ID #
 @app.route('/recipes/<int:recipe_id>', methods=['GET'])

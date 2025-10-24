@@ -6,7 +6,7 @@ ma = Marshmallow()
 class UserSchema(ma.Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
-    recipes = fields.Nested('RecipeSchema', many=True, only=('id', 'name', 'category'))
+    recipes = fields.Nested('RecipeSchema', many=True, only=('id', 'name', 'category', 'user'))
 
 class CategorySchema(ma.Schema):
     id = fields.Int(dump_only=True)

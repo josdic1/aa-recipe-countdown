@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import RecipeProvider from './providers/RecipeProvider'
+import RecipeProvider from './context-providers/RecipeProvider'
 import NavBar from './components/NavBar'
 import './App.css'
 
