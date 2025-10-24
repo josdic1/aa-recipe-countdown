@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context-providers/RecipeContext";
+import { useFormik } from 'formik';
 
 function RecipeForm() {
     const { createRecipe, createCategory, categories } = useContext(RecipeContext);
@@ -76,36 +77,70 @@ async function onCategorySubmit() {
     navigate('/')
 }
 
+const formik = useFormik({
+    initialValues: {
+        name: '',
+        category_id: ''
+    },
+    validate: values => {
+        const errors = {};
+        
+        if (!values.name) {
+            errors.name = 'Recipe name is required';
+        }
+        
+        if (!values.category_id) {
+            errors.category_id = 'Category is required';
+        }
+        
+        return errors;
+    },
+    onSubmit: async (values) => {
+        await createRecipe(values.name, values.category_id);
+        navigate('/');
+    }
+});
+
+
 
     return (
         <>
-            <form onSubmit={onSubmit}>
-                <div>
-                    <label>Name:</label>
-                    <input type="text" name="name" value={formData.name} onChange={onChange} />
-                </div>
-                <div>
-                    {categoryFormHidden ? "HIDDEN" : 
-                    <div>
-                    <input type="text" onChange={onCategoryInput} value={categoryForm.name} placeholder="category name..."/>
-                    <button type='button' onClick={onCategorySubmit}> Confirm </button>
-                         </div>
-                    }
-                </div>
-                <div>
-                    <label>Category:</label>
-                    <select name="category_id" value={formData.category_id} onChange={onChange}>
-                        <option value="">Select a category</option>
-                        {updatedCategories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                                {category.name}
-                            </option>
-                        ))}
-                    </select>
-                    <button type="button" onClick={categoryClick}>{categoryFormHidden ? 'Add Category' : 'Cancel'}</button>
-                </div>
-                <button type="submit">Create Recipe </button>
-            </form>
+            <form onSubmit={formik.handleSubmit}>
+        <div>
+            <label>Name:</label>
+            <input 
+                type="text" 
+                name="name" 
+                value={formik.values.name} 
+                onChange={formik.handleChange}
+                required  // ← Add HTML validation too
+            />
+            {formik.errors.name && <span style={{color: 'red'}}>{formik.errors.name}</span>}
+        </div>
+                       <div>
+            <label>Category:</label>
+            <select 
+                name="category_id" 
+                value={formik.values.category_id} 
+                onChange={formik.handleChange}
+                required  // ← Add HTML validation
+            >
+                <option value="">Select a category</option>
+                {updatedCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                        {category.name}
+                    </option>
+                ))}
+            </select>
+            {formik.errors.category_id && <span style={{color: 'red'}}>{formik.errors.category_id}</span>}
+            <button type="button" onClick={categoryClick}>
+                {categoryFormHidden ? 'Add Category' : 'Cancel'}
+            </button>
+        </div>
+
+        <button type="submit">Create Recipe</button>
+    </form>
+
         </>
     )
 }
